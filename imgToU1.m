@@ -1,15 +1,15 @@
-function Ffield=imgToF1(img,kRep,endPos,kAttr,rObj)
+function Ufield=imgToU1(img,kRep,endPos,kAttr,rObj)
 %     Ffield=imgToF1(img,kRep,endPos,kAttr,rObj)
 %     inputs:
 %       img=grayscale image representation of 2D-environment
 %         all black pixels (I = 0) are obstacles
-%       kRep=scaling constant for repulsive (obstacle) force
+%       kRep=scaling constant for repulsive (obstacle) potential
 %       endPos=row vector containing the desired goal point
 %         endPos goes [y x] NOT [x y]
-%       kAttr=scaling constant for attractive (goal) force
+%       kAttr=scaling constant for attractive (goal) potential
 %       rObj=the radius of influence for every given object pixel
 %     outputs:
-%       Ffield=combined field map
+%       Ufield=combined potential field
 
 %     constants and initialization
     [yMax,xMax]=size(img);
@@ -22,20 +22,20 @@ function Ffield=imgToF1(img,kRep,endPos,kAttr,rObj)
     k=100;
     dFieldNaN=(dField/k)+1;
     
-%     calculate the repulsive force at every point, based on the distance
-%     field and how large an influence every object point has
-    Frep=kRep*((1./dFieldNaN-1/rObj).^2);
+%     calculate the repulsive potential at every point, based on the
+%     distance field and how large an influence every object point has
+    Urep=kRep*((1./dFieldNaN-1/rObj).^2);
 %     zero-out any point's distance who is larger than rObj
-    Frep(dFieldNaN>rObj)=0;
+    Urep(dFieldNaN>rObj)=0;
 
-%     calculate the attractive force at every point, based on the current
-%     co-ordinates and a parabaloid
+%     calculate the attractive potential at every point, based on the 
+%     current co-ordinates and a parabaloid
 %     use meshgrid to create matrix representations of the row and column
 %     vectors of x and y, sized off of our input image size
     [x,y]=meshgrid(1:xMax,1:yMax);
 %     generate a parabaloid with vertex/minimum being the 
-    Fattr=kAttr*((y-endPos(1)).^2+(x-endPos(2)).^2);
+    Uattr=kAttr*((y-endPos(1)).^2+(x-endPos(2)).^2);
     
-%     Add attractive and repulsive to get total force at every point
-    Ffield=Fattr+Frep;
+%     Add attractive and repulsive to get total potential at every point
+    Ufield=Uattr+Urep;
 end

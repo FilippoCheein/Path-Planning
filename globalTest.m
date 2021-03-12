@@ -12,10 +12,10 @@ Kobj=500;
 Kgoal=1/400;
 Robj=1.5;
 
-% calculate the force map given current constants and map image
-Fmap1=imgToF1(map1,Kobj,endPt,Kgoal,Robj);
+% calculate the potential map given current constants and map image
+Umap1=imgToU1(map1,Kobj,endPt,Kgoal,Robj);
 % run main path planning function
-path=APFglobal(Fmap1,startPt,endPt,1E3);
+path=APFglobal(Umap1,startPt,endPt,1E3);
 
 % display 2D map and flip y-axis to be consistent with 3D mesh plot
 figure(1)
@@ -30,7 +30,7 @@ ax.YDir='normal';
 % given point
 figure(2)
 clf
-mesh(Fmap1)
+mesh(Umap1)
 % use interpolated parula shading for better representation of height
 shading interp
 colormap parula
@@ -41,7 +41,7 @@ hold on
 for i=1:length(path)
     x=double(round(path(i,2)));
     y=double(round(path(i,1)));
-    z=double(Fmap1(y,x));
+    z=double(Umap1(y,x));
     figure(1)
 %     make the path a bunch of red circles with 'ro'
     plot(x,y,'ro')
@@ -57,5 +57,5 @@ text(endPt(2),endPt(1),sprintf('Ending Position\nX=%i, Y=%i',endPt(2),endPt(1)),
 rectangle('Position',[1 1 800-1 450-1])
 
 figure(2)
-text(startPt(2),startPt(1),200+double(Fmap1(startPt(1),startPt(2))),sprintf('Starting Position\nX=%i, Y=%i',startPt(2),startPt(1)),'BackgroundColor','w','EdgeColor','k')
+text(startPt(2),startPt(1),200+double(Umap1(startPt(1),startPt(2))),sprintf('Starting Position\nX=%i, Y=%i',startPt(2),startPt(1)),'BackgroundColor','w','EdgeColor','k')
 text(endPt(2),endPt(1),200,sprintf('Ending Position\nX=%i, Y=%i',endPt(2),endPt(1)),'BackgroundColor','w','EdgeColor','k')
