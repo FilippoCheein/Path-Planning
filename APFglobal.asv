@@ -1,24 +1,35 @@
-Fmap=Fmap1;
-initPos=startPt;
-endPos=endPt;
-iter=1E3;
+function path=APFglobal(Fmap,initPos,endPos,iter)
+%     path=APFglobal(Fmap,initPos,endPos,iter)
+%     inputs:
+%       Fmap=force map, a matrix that holds every point's force
+%       initPos=agent starting point in [y x] format
+%       endPos=agent goal point in [y x] format
+%       iter=limit to how many iterations before stopping code execution so
+%       we can get see failed path planning scenarios
+%     outputs:
+%       path=all points along the path, a Mx2 matrix with M being number of
+%       steps, maximum of 1000, each row is in the form [y x]
 
-% function path=APFglobal(Fmap,initPos,endPos,iter)
+%     calculate the negative gradient of the attractive force along the x
+%     and y axis
     [gX,gY]=gradient(-Fmap);
     
+%     initialize the path and currPt variables
     path=initPos;
     currPt=initPos;
+%     speed of movement (scales gradient direction)
     v=3*[1 1];
-    tol=1;
+%     how close to 
+    tol=50;
     
     while iter>0
         if norm(endPos-currPt)<tol
             break;
         end
-        dirX=gX(floor(currPt(1)),floor(currPt(1)));
-        dirY=gY(floor(currPt(1)),floor(currPt(1)));
+        dirX=gX(floor(currPt(1)),floor(currPt(2)));
+        dirY=gY(floor(currPt(1)),floor(currPt(2)));
         
-        dirVec=[dirX dirY];
+        dirVec=[dirY dirX];
         
         dirNorm=dirVec./norm(dirVec);
         
@@ -28,4 +39,4 @@ iter=1E3;
         
         iter=iter-1;
     end
-% end
+end
