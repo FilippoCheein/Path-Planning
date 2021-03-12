@@ -16,7 +16,7 @@ function path=APFglobal(Fmap,initPos,endPos,iter)
 %     speed of movement (scales gradient direction)
     v=3*[1 1];
 %     max distance from goal to consider the run a success
-    tol=50;
+    tol=10;
     
 %     calculate the negative gradient of the attractive force along the x
 %     and y axis
