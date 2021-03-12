@@ -9,10 +9,6 @@ function path=APFglobal(Fmap,initPos,endPos,iter)
 %     outputs:
 %       path=all points along the path, a Mx2 matrix with M being number of
 %       steps, maximum of 1000, each row is in the form [y x]
-
-%     calculate the negative gradient of the attractive force along the x
-%     and y axis
-    [gX,gY]=gradient(-Fmap);
     
 %     initialize the path and currPt variables
     path=initPos;
@@ -21,6 +17,10 @@ function path=APFglobal(Fmap,initPos,endPos,iter)
     v=3*[1 1];
 %     max distance from goal to consider the run a success
     tol=50;
+    
+%     calculate the negative gradient of the attractive force along the x
+%     and y axis
+    [gX,gY]=gradient(-Fmap);
     
 %     while loop to control number of iterations/steps to 1000
     while iter>0
