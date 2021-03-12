@@ -8,6 +8,7 @@ function Ffield=imgToF1(img,kRep,endPos,kAttr,rObj)
 %         endPos goes [y x] NOT [x y]
 %       kAttr=scaling constant for attractive (goal) force
 %       rObj=the radius of influence for every given object pixel
+%     outputs:
 %       Ffield=combined field map
 
 %     constants and initialization
