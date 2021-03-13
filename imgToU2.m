@@ -26,10 +26,13 @@ function Ufield=imgToU2(img,kRep,endPos,kAttr,rObj,n)
     k=100;
     dFieldObj=(dFieldObj/k)+1;
     
+%     calculate the n-th order euclidean distance from every point to the
+%     goal, to be used in repulsive potential calculation
     dFieldEnd=(abs(x-endPos(2)).^n+abs(y-endPos(1)).^n).^1/n;
     
 %     calculate the repulsive potential at every point, based on the
-%     distance field and how large an influence every object point has
+%     distance field and how large an influence every object point has and
+%     now also the n-th order euclidean distance to the goal
     Urep=kRep*((1./dFieldObj-1/rObj).^2).*dFieldEnd;
 %     zero-out any point's distance who is larger than rObj
     Urep(dFieldObj>rObj)=0;
