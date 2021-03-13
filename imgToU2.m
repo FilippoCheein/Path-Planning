@@ -8,6 +8,8 @@ function Ufield=imgToU2(img,kRep,endPos,kAttr,rObj,n)
 %         endPos goes [y x] NOT [x y]
 %       kAttr=scaling constant for attractive (goal) potential
 %       rObj=the radius of influence for every given object pixel
+%       n=euclidean distance order for goal distance calculation, specify
+%       n=0 for unmodified APF condition
 %     outputs:
 %       Ufield=combined potential field
 
@@ -28,7 +30,11 @@ function Ufield=imgToU2(img,kRep,endPos,kAttr,rObj,n)
     
 %     calculate the n-th order euclidean distance from every point to the
 %     goal, to be used in repulsive potential calculation
-    dFieldEnd=(abs(x-endPos(2)).^n+abs(y-endPos(1)).^n).^1/n;
+    if n~=0
+        dFieldEnd=(abs(x-endPos(2)).^n+abs(y-endPos(1)).^n).^1/n;
+    else
+        dFieldEnd=1;
+    end
     
 %     calculate the repulsive potential at every point, based on the
 %     distance field and how large an influence every object point has and
