@@ -1,7 +1,7 @@
-function path=APFglobal(Fmap,initPos,endPos,iter)
-%     path=APFglobal(Fmap,initPos,endPos,iter)
+function path=APFglobal(Umap,initPos,endPos,iter)
+%     path=APFglobal(Umap,initPos,endPos,iter)
 %     inputs:
-%       Fmap=force map, a matrix that holds every point's force
+%       Umap=force map, a matrix that holds every point's force
 %       initPos=agent starting point in [y x] format
 %       endPos=agent goal point in [y x] format
 %       iter=limit to how many iterations before stopping code execution so
@@ -20,7 +20,7 @@ function path=APFglobal(Fmap,initPos,endPos,iter)
     
 %     calculate the negative gradient of the attractive force along the x
 %     and y axis
-    [gX,gY]=gradient(-Fmap);
+    [gX,gY]=gradient(-Umap);
     
 %     while loop to control number of iterations/steps to 1000
     while iter>0
