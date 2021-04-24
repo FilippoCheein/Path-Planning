@@ -1,4 +1,4 @@
-function [uField]=coordsToU(LoggedSignals)
+function [uField]=coordsToU(LoggedSignals,figN)
     kAtt=1;
     kRep=20;
     rRep=3;
@@ -11,7 +11,6 @@ function [uField]=coordsToU(LoggedSignals)
     
     uRep=zeros(100);
 %     regions=zeros(100);
-    figure(1)
 %     tiledlayout(3,1,'TileSpacing','tight','Padding','tight')
 %     nexttile
     for n=1:size(LoggedSignals.Obst,1)
@@ -28,10 +27,24 @@ function [uField]=coordsToU(LoggedSignals)
 %     nexttile
 %     mesh(uRep)
 %     nexttile
-    mesh(uField)
-    shading interp
-    colormap parula
-    xlabel('x axis')
-    ylabel('y axis')
+    if figN>0
+        figure(figN)
+        clf
+        mesh(uField)
+        shading interp
+        colormap parula
+        xlabel('x axis')
+        ylabel('y axis')
+        hold on
+%         calculate the starting and ending z co-ord based on uMap
+        startZ=double(uField(LoggedSignals.State(1),LoggedSignals.State(2)));
+        endZ=double(uField(LoggedSignals.Goal(1),LoggedSignals.Goal(2)));
+%         mark the start point as a green circle
+        plot3(LoggedSignals.State(2),LoggedSignals.State(1),startZ...
+            ,'wo','MarkerSize',15,'MarkerFaceColor','g')
+%         mark the end point as a green diamond
+        plot3(LoggedSignals.Goal(2),LoggedSignals.Goal(1),endZ...
+            ,'wd','MarkerSize',15,'MarkerFaceColor','r')
+    end
     
 % end
