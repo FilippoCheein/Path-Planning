@@ -7,17 +7,17 @@
 
 function [InitialObservation, LoggedSignal] = myResetFunction()
 
-Start = randi(100,1,2);
+Operator = randi(100,1,2);
 End = randi(100,1,2);
-while (norm(Start - End) < 2)
+while (norm(Operator - End) < 2)
     End = randi(100,1,2);
 end
 Obstacle = randi(100,1,2);
-while (norm(Obstacle - End) < 2 || norm(Obstacle - Start) < 2)
+while (norm(Obstacle - End) < 2 || norm(Obstacle - Operator) < 2)
     Obstacle = randi(100,1,2);
 end
 
 % Return initial environment state variables as logged signals.
-LoggedSignal.State = [Start;End;Obstacle];
+LoggedSignal.State = [Operator;End;Obstacle];
 InitialObservation = LoggedSignal.State;
 end
