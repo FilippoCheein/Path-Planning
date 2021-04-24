@@ -1,0 +1,9 @@
+function [InitialObservation,LoggedSignals]=multiObstacleReset()
+
+    nObst=randi(10);
+    yVec=randperm(100,2+nObst);
+    xVec=randperm(100,2+nObst);
+    LoggedSignals.State=[yVec[:.',xVec.'];
+    InitialObservation=LoggedSignals.State;
+
+end
