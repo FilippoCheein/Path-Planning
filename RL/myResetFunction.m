@@ -1,3 +1,4 @@
+%%% Outdated intitial RL code that has been superceded by timNN path
 % ObservationInfo = rlNumericSpec([9 9]);
 % ObservationInfo.Name = 'Robot View';
 % ObservationInfo.Description = 'LocalPotential';

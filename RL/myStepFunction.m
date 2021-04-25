@@ -1,3 +1,5 @@
+%%% Outdated intitial RL code that has been superceded by timNN path
+
 function [NextObs,Reward,IsDone,LoggedSignals] = myStepFunction(Action,LoggedSignals)
 
 katt = 1;

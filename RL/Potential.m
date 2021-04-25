@@ -1,3 +1,4 @@
+%%% Outdated intitial RL code that has been superceded by timNN path
 function Ufield = Potential(State,Ragent,kRep,kAttr,rObj,n)
 
     Operator = State(1);
