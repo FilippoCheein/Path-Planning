@@ -1,10 +1,11 @@
-function [uField]=coordsToU(LoggedSignals,figN)
-%     [uField]=coordsToU(LoggedSignals,figN)
+function [uField]=coordsToUPad(LoggedSignals,rPad,figN)
+%     [uField]=coordsToUPad(LoggedSignalsm,rPad,figN)
 %     inputs:
 %       LoggedSignals.State=[y,x] co-ords of robot
 %       LoggedSignals.Goal=[y,x] co-ords of goal
 %       LoggedSignals.Obst=Nx2 matrix where the n-th column pair [y,x]
 %       represents the n-th obstacle, with N = number of obstacles
+%       rPad=how many pixels to pad (extra calculate) uField by
 %       figN=zero for no figure plotting, otherwise specify figure number
 %     outputs:
 %         uField=potential field array
@@ -14,8 +15,8 @@ function [uField]=coordsToU(LoggedSignals,figN)
     kRep=20;
     rRep=3;
     
-%     generate x and y matrix variables
-    [x,y]=meshgrid(1:100,1:100);
+%     run x and y from +/- rPad so that offsets are nice
+    [x,y]=meshgrid(1-rPad:100+rPad,1-rPad:100+rPad);
     
 %     calculate distance from every point to the goal
     yGoal=y-LoggedSignals.Goal(1);
@@ -25,12 +26,13 @@ function [uField]=coordsToU(LoggedSignals,figN)
     uAtt=0.5*kAtt*(yGoal.^2+xGoal.^2);
     
 %     pre-allocate repulsive field so MATLAB doesn't yell at me
-    uRep=zeros(100);
+    uRep=zeros(100+2*rPad);
     for n=1:size(LoggedSignals.Obst,1)
 %         calculate distance from every point to n-th obstacle
         currY=y-LoggedSignals.Obst(n,1);
         currX=x-LoggedSignals.Obst(n,2);
         currDist=sqrt(currY.^2+currX.^2);
+        
 %         calculate n-th obstacle's potential repulsive field
         currRep=0.5*kRep*(1./(currDist+0.05)-1/rRep).^2;
 %         add up all with a step function for domain'ing
@@ -55,7 +57,7 @@ function [uField]=coordsToU(LoggedSignals,figN)
 %         mark the start point as a green circle
         plot3(LoggedSignals.State(2),LoggedSignals.State(1),startZ...
             ,'wo','MarkerSize',15,'MarkerFaceColor','g')
-%         mark the end point as a red diamond
+%         mark the end point as a green diamond
         plot3(LoggedSignals.Goal(2),LoggedSignals.Goal(1),endZ...
             ,'wd','MarkerSize',15,'MarkerFaceColor','r')
     end
