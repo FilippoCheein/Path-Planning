@@ -27,8 +27,8 @@ classdef envClass < rl.env.MATLABEnvironment
     
     properties(Access = protected)
         % Initialize internal flag to indicate episode termination
-        IsDone = false   
-        
+        IsDone=false;
+        newPlot=false;
         Figure
     end
 
@@ -103,26 +103,28 @@ classdef envClass < rl.env.MATLABEnvironment
         
         % Reset environment to initial state and output initial observation
         function InitialObservation = reset(this)
-            %     Choose # of obstacles randomly from 1-10
-                nObst=randi(10);
-            %     Generate Y and X co-ords of obstacle(s), goal, and start point
-            %     randomly, with all Y,X pairs being unique
-                yVec=randperm(100,2+nObst);
-                xVec=randperm(100,2+nObst);
-            %     set the state goal and obstacle's pairs
-                init=[yVec(1),xVec(1)];
-                this.State=init;
-                this.Goal=[yVec(2),xVec(2)];
-                this.Obst=[yVec(3:end).',xVec(3:end).'];
-            %     use non-padding coords to potential function to make uField
-                this.uField=coordsToU(this);
-            %     use padding coords to potential fucntion to then use for observation
-            %     bounding box
-                rPad=4;
-                this.uFieldPad=coordsToUPad(this,rPad);
-            %     for observation use padded field w/ subsetBounded
-                InitialObservation=subsetBounded(this.uFieldPad,init,rPad);
-            
+        %     Choose # of obstacles randomly from 1-10
+            nObst=randi(10);
+        %     Generate Y and X co-ords of obstacle(s), goal, and start point
+        %     randomly, with all Y,X pairs being unique
+            yVec=randperm(100,2+nObst);
+            xVec=randperm(100,2+nObst);
+        %     set the state goal and obstacle's pairs
+            init=[yVec(1),xVec(1)];
+            this.State=init;
+            this.Goal=[yVec(2),xVec(2)];
+            this.Obst=[yVec(3:end).',xVec(3:end).'];
+        %     use non-padding coords to potential function to make uField
+            this.uField=coordsToU(this);
+        %     use padding coords to potential fucntion to then use for observation
+        %     bounding box
+            rPad=4;
+            this.uFieldPad=coordsToUPad(this,rPad);
+        %     for observation use padded field w/ subsetBounded
+            InitialObservation=subsetBounded(this.uFieldPad,init,rPad);
+
+            this.newPlot=true;
+                
             % (optional) use notifyEnvUpdated to signal that the 
             % environment has been updated (e.g. to update visualization)
             notifyEnvUpdated(this);
@@ -238,11 +240,18 @@ classdef envClass < rl.env.MATLABEnvironment
             ha = gca(this.Figure);
             ha.XLimMode = 'manual';
             ha.YLimMode = 'manual';
-            ha.XLim = [-100 100];
-            ha.YLim = [-100 100];
-%             hold(ha,'on');
+            ha.XLim = [0 100];
+            ha.YLim = [0 100];
+            ha.XLabel.String='x axis';
+            ha.YLabel.String='y axis';
+            hold(ha,'on');
+            shading(ha,'interp')
+            colormap(ha,'parula')
+            view(ha,-20,20)
+            
             % Update the visualization
             envUpdatedCallback(this)
+            
         end
         
     end
@@ -254,27 +263,41 @@ classdef envClass < rl.env.MATLABEnvironment
             if ~isempty(this.Figure) && isvalid(this.Figure)
                 % Set visualization figure as the current figure
                 ha = gca(this.Figure);
+                
+                if this.newPlot
+                    prevSurf=findobj(ha,'type','surface');
+                    prevLine=findobj(ha,'type','line');
+                    prevAnim=findobj(ha,'type','AnimatedLine');
+                    
+                    delete(prevSurf)
+                    delete(prevLine)
+                    delete(prevAnim)
+                    
+                    mesh(ha,this.uField);
 
-                figure(ha)
-                clf
-                mesh(this.uField)
-                shading interp
-                colormap parula
-                xlabel('x axis')
-                ylabel('y axis')
-                hold on
-        %         calculate the starting and ending z co-ord based on uField
-                startZ=double(this.uField(this.State(1),this.State(2)));
-                endZ=double(this.uField(this.Goal(1),this.Goal(2)));
-        %         mark the start point as a green circle
-                plot3(this.State(2),this.State(1),startZ...
-                    ,'wo','MarkerSize',15,'MarkerFaceColor','g')
-        %         mark the end point as a red diamond
-                plot3(this.Goal(2),this.Goal(1),endZ...
-                    ,'wd','MarkerSize',15,'MarkerFaceColor','r')
+                    startZ=this.uField(this.State(1),this.State(2));
+        %             mark the start point as a magenta circle
+                    plot3(ha,this.State(2),this.State(1),startZ...
+                        ,'wo','MarkerSize',15,'MarkerFaceColor','m');
 
-                % Refresh rendering in the figure window
-                % drawnow();
+
+                    this.uField(this.Goal(1),this.Goal(2))
+        %             mark the end point as a red diamond
+                    endZ=this.uField(this.Goal(1),this.Goal(2));
+                    plot3(ha,this.Goal(2),this.Goal(1),endZ...
+                        ,'wd','MarkerSize',15,'MarkerFaceColor','r');
+                    this.newPlot=false;
+                end
+                
+                an=animatedline(ha,'Marker','o','MarkerEdgeColor','w','MarkerSize',15,'MarkerFaceColor','g');
+                
+%                 if max(this.State)<100&&min(this.State)>1
+                if ~this.IsDone
+                    startZ=this.uField(this.State(1),this.State(2));
+%                     mark the start point as a green circle
+                    addpoints(an,this.State(2),this.State(1),startZ);
+                    drawnow
+                end
             end
         end
     end

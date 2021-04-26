@@ -29,7 +29,7 @@ trainOpts.ScoreAveragingWindowLength = 5;
 trainOpts.SaveAgentDirectory = "savedAgents";
 trainOpts.Verbose = false;
 trainOpts.Plots = "training-progress";
-% plot(env)
+plot(env)
 trainingInfo = train(agent,env,trainOpts);
 
 % simOptions = rlSimulationOptions('MaxSteps',500);
