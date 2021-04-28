@@ -6,7 +6,7 @@ classdef envClass < rl.env.MATLABEnvironment
 %         constants for DQN
         wCol=-10;
         wGoal=10;
-        wTime=0.2;
+        wTime=-0.2;
         alpha=-20;
 %         alpha=-1;
         
@@ -18,7 +18,7 @@ classdef envClass < rl.env.MATLABEnvironment
         kStr=20;
         rStr=8;
         fieldSize=50;
-        rObserve=4
+        rObserve=4;
     end
     
     properties
@@ -84,22 +84,24 @@ classdef envClass < rl.env.MATLABEnvironment
         %     if we collided, then zero out the next observation cause we're gonna
         %     terminate this run, and repeat single pt potential to not influence
         %     reward function
-            if IsCol
+%             if IsCol
 %                 pull from uFieldPad instead of diff = 0
-                uCurr=this.uFieldPad(this.State(1)+this.rObserve,this.State(2)+this.rObserve);
-                Observation=zeros(2*this.rObserve+1);
-            else
+            uCurr=this.uFieldPad(this.State(1)+this.rObserve,this.State(2)+this.rObserve);
+            % Observation=zeros(2*this.rObserve+1);
+
+%             else
         %         otherwise do normal single pt potential and observation
         %         calculations
-                uCurr=this.uField(this.State(1),this.State(2));
-                Observation=subsetBounded(this.uFieldPad,nextState,this.rObserve);
-            end
+%                 uCurr=this.uField(this.State(1),this.State(2));
+%                 Observation=subsetBounded(this.uFieldPad,nextState,this.rObserve);
+%             end
             
 %             bounce off the wall
             if wallC
                 this.State(this.State>this.fieldSize)=this.fieldSize;
                 this.State(this.State<1)=1;
             end
+            Observation=subsetBounded(this.uFieldPad,this.State,this.rObserve);
             
         %     check if at goal, then done
             IsGoal=norm(this.State-this.Goal)<=1.5;
@@ -309,7 +311,7 @@ classdef envClass < rl.env.MATLABEnvironment
                         ,'wo','MarkerSize',15,'MarkerFaceColor','m');
 
 
-                    this.uField(this.Goal(1),this.Goal(2))
+                    
         %             mark the end point as a red diamond
                     endZ=150+this.uField(this.Goal(1),this.Goal(2));
                     plot3(ha,this.Goal(2),this.Goal(1),endZ...

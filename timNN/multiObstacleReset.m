@@ -1,4 +1,4 @@
-function [InitialObservation,LoggedSignals]=multiObstacleReset()
+% function [InitialObservation,LoggedSignals]=multiObstacleReset()
 
 %     Choose # of obstacles randomly from 1-10
     nObst=randi(10);
@@ -12,11 +12,11 @@ function [InitialObservation,LoggedSignals]=multiObstacleReset()
     LoggedSignals.Goal=[yVec(2),xVec(2)];
     LoggedSignals.Obst=[yVec(3:end).',xVec(3:end).'];
 %     use non-padding coords to potential function to make uField
-    LoggedSignals.uField=coordsToU(LoggedSignals,0);
+    LoggedSignals.uField=coordsToU(LoggedSignals,1);
 %     use padding coords to potential fucntion to then use for observation
 %     bounding box
     rPad=4;
-    LoggedSignals.uFieldPad=coordsToUPad(LoggedSignals,rPad,0);
+    LoggedSignals.uFieldPad=coordsToUPad(LoggedSignals,rPad,2);
 %     for observation use padded field w/ subsetBounded
     InitialObservation=subsetBounded(LoggedSignals.uFieldPad,init,rPad);
-end
+% end
