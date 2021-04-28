@@ -4,8 +4,8 @@ function [NextObs,Reward,IsDone,LoggedSignals]=multiObstacleStep(Action,LoggedSi
     wCol=-10;
     wGoal=10;
     wTime=0.2;
-%     alpha=-20;
-    alpha=-1;
+    alpha=-20;
+%     alpha=-1;
     
 %     previous state and current location's potential value
     prevState=LoggedSignals.State;
