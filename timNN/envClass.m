@@ -3,26 +3,25 @@ classdef envClass < rl.env.MATLABEnvironment
     
     %% Properties (set properties' attributes accordingly)
     properties
-%         constants for DQN
-        wCol=-10;
-        wGoal=10;
+    	% constants for RL/NN
+        wCol=-10E2;
+        wGoal=10E2;
         wTime=-0.2;
         alpha=-20;
-%         alpha=-1;
         
-%         constants for APF
+        % constants for APF
         kAtt=1;
         kRep=20;
         offRep=0.09;
         rRep=3;
-        kStr=20;
+        kStr=8;
         rStr=8;
         fieldSize=50;
         rObserve=4;
     end
     
     properties
-        % Initialize system state [x,dx,theta,dtheta]'
+        % initialize variables
         State=zeros(1,2);
         Goal=zeros(1,2);
         Obst=[];
@@ -44,12 +43,14 @@ classdef envClass < rl.env.MATLABEnvironment
         % Change class name and constructor name accordingly
         function this = envClass()
             % Initialize Observation settings
+            % observation is r=4 (9x9) area around agent
             ObservationInfo = rlNumericSpec((2*4+1)*[1 1]);
             ObservationInfo.Name='Robot Position (y,x)';
             
-            % Initialize Action settings   
-%             actions={[0 0],[-1 0],[-1 1],[0 1],[1 1],[1 0],[1 -1],[0 -1],[-1 -1]};
-            actions={[-1 0],[-1 1],[0 1],[1 1],[1 0],[1 -1],[0 -1],[-1 -1]};
+            % Initialize Action settings
+            % action can be move to one of 8 adjacent tiles or stay in current tile
+            actions={[0 0],[-1 0],[-1 1],[0 1],[1 1],[1 0],[1 -1],[0 -1],[-1 -1]};
+%             actions={[-1 0],[-1 1],[0 1],[1 1],[1 0],[1 -1],[0 -1],[-1 -1]};
             ActionInfo=rlFiniteSetSpec(actions);
             ActionInfo.Name='Chosen [y,x] Velocity';
             
@@ -61,9 +62,10 @@ classdef envClass < rl.env.MATLABEnvironment
         % given action for one step.
         function [Observation,Reward,IsDone,LoggedSignals] = step(this,Action)
             LoggedSignals = [];
+            % keep track of current step #
             this.nSteps=this.nSteps-1;
             
-            %     previous state and current location's potential value
+            %     store previous state and calculate potential at it
             prevState=this.State;
             uPrev=this.uField(prevState(1),prevState(2));
 
@@ -81,37 +83,25 @@ classdef envClass < rl.env.MATLABEnvironment
             end
         %     both of those two are collision checks
             IsCol=obsC||wallC;
-        %     if we collided, then zero out the next observation cause we're gonna
-        %     terminate this run, and repeat single pt potential to not influence
-        %     reward function
-%             if IsCol
-%                 pull from uFieldPad instead of diff = 0
+%                 calculate current potential, pull from padded array for edge casing
             uCurr=this.uFieldPad(this.State(1)+this.rObserve,this.State(2)+this.rObserve);
-            % Observation=zeros(2*this.rObserve+1);
 
-%             else
-        %         otherwise do normal single pt potential and observation
-        %         calculations
-%                 uCurr=this.uField(this.State(1),this.State(2));
-%                 Observation=subsetBounded(this.uFieldPad,nextState,this.rObserve);
-%             end
-            
-%             bounce off the wall
+%             bounce off the wall to prevent out of bounds
             if wallC
                 this.State(this.State>this.fieldSize)=this.fieldSize;
                 this.State(this.State<1)=1;
             end
+            % assign observation
             Observation=subsetBounded(this.uFieldPad,this.State,this.rObserve);
             
-        %     check if at goal, then done
+        %     check if close to goal
             IsGoal=norm(this.State-this.Goal)<=1.5;
         %     reward for change of the potential field
             wMove=this.alpha*(uCurr-uPrev);
         %     apply reward
-        %     make sure not to give goal reward when "done" via collision
             Reward=this.wTime+wMove+this.wGoal*IsGoal+this.wCol*IsCol;
-        %     mark run as done in the case of success or failure via collision
-            IsDone=IsGoal;
+        %     mark run as completed/done if either collision or goal occurs
+            IsDone=IsGoal||IsCol;
             this.IsDone=IsDone;
             
             % (optional) use notifyEnvUpdated to signal that the 
@@ -121,11 +111,10 @@ classdef envClass < rl.env.MATLABEnvironment
         
         % Reset environment to initial state and output initial observation
         function InitialObservation = reset(this)
-            
+            % reset step number
             this.nSteps=500;
         %     Choose # of obstacles randomly from 1-10
             nObst=randi(10);
-%             nObst=0;
         %     Generate Y and X co-ords of obstacle(s), goal, and start point
         %     randomly, with all Y,X pairs being unique
             yVec=randperm(this.fieldSize,2+nObst);
@@ -292,6 +281,20 @@ classdef envClass < rl.env.MATLABEnvironment
         % (notifyEnvUpdated is called)
         function envUpdatedCallback(this)
             if ~isempty(this.Figure) && isvalid(this.Figure)
+%                 temporary figure 100 for 2D environment viewing (no
+%                 potential curvature)
+%                 figure(100)
+%                 obstImg=ones(this.fieldSize,'uint8')*255;
+%                 goalImg=zeros(this.fieldSize,'uint8');
+%                 startImg=goalImg;
+%                 goalImg(sub2ind(this.fieldSize*[1 1],this.Goal(1),this.Goal(2)))=1;
+%                 startImg(sub2ind(this.fieldSize*[1 1],this.State(1),this.State(2)))=1;
+%                 obstImg(sub2ind(this.fieldSize*[1 1],this.Obst(:,1),this.Obst(:,2)))=0;
+%                 fieldImg=imoverlay(obstImg,goalImg,'r');
+%                 fieldImg=imoverlay(fieldImg,startImg,'m');
+%                 imshow(fieldImg);
+%                 truesize([500 500]);
+                
                 % Set visualization figure as the current figure
                 ha = gca(this.Figure);
                 ha.XLabel.String=sprintf('x-axis Steps=%i',500-this.nSteps);
@@ -309,9 +312,7 @@ classdef envClass < rl.env.MATLABEnvironment
         %             mark the start point as a magenta circle
                     plot3(ha,this.State(2),this.State(1),startZ...
                         ,'wo','MarkerSize',15,'MarkerFaceColor','m');
-
-
-                    
+     
         %             mark the end point as a red diamond
                     endZ=150+this.uField(this.Goal(1),this.Goal(2));
                     plot3(ha,this.Goal(2),this.Goal(1),endZ...
@@ -320,7 +321,6 @@ classdef envClass < rl.env.MATLABEnvironment
                 end
                 
                 an=animatedline(ha,'Marker','o','MarkerEdgeColor','w','MarkerSize',15,'MarkerFaceColor','g');
-%                 if max(this.State)<100&&min(this.State)>1
                 if ~this.IsDone
                     startZ=150+this.uField(this.State(1),this.State(2));
 %                     mark the start point as a green circle

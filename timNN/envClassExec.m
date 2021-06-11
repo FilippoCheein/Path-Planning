@@ -1,15 +1,8 @@
+% initialize environment class object
 env=envClass;
 validateEnvironment(env);
 
-% % define RL observation info (specs of our observation)
-% ObservationInfo=rlNumericSpec([9 9]);
-% ObservationInfo.Name='Robot Position (y,x)';
-% 
-% % define RL action info (possible actions)
-% actions={[0 0],[-1 0],[-1 1],[0 1],[1 1],[1 0],[1 -1],[0 -1],[-1 -1]};
-% ActionInfo=rlFiniteSetSpec(actions);
-% ActionInfo.Name='Chosen [y,x] Velocity';
-
+% use class functions to initialize observation and actions
 obsInfo = getObservationInfo(env);
 actInfo = getActionInfo(env);
 
@@ -35,35 +28,31 @@ criticNetwork=[
 %     softmaxLayer('Name','Softmax Output')
 %     classificationLayer('Name','Classification Output')
     ];
-dlCriticNet=dlnetwork(criticNetwork);
 
-criticOptions=rlRepresentationOptions('UseDevice','gpu');
+% construct NN deep learning object
+dlCriticNet=dlnetwork(criticNetwork);
+% use GPU as its better optimized, also crank down learning rate
+criticOptions=rlRepresentationOptions('UseDevice','gpu','LearnRate',0.001);
+% create critic object for use in agent creation
 critic=rlQValueRepresentation(dlCriticNet,obsInfo,actInfo,'Observation','r=4 Observation Input',criticOptions);
 agentOptions=rlDQNAgentOptions;
+% specify DQN epsilon greedy decay rate and minimum
 agentOptions.EpsilonGreedyExploration.EpsilonDecay=0.05;
 agentOptions.EpsilonGreedyExploration.EpsilonMin=0.05;
-
+% create agent object
 agent=rlDQNAgent(critic,agentOptions);
 
-% copy paste training specs from MATLAB, remove stop criteria as our reward
-% function shoots to 10^13 or something stupid like that
-trainOpts=rlTrainingOptions;
 
-trainOpts.MaxEpisodes=1000;
-% trainOpts.MaxStepsPerEpisode=500;
+trainOpts=rlTrainingOptions;
+% specify training so each run only has 250 steps, and 
+trainOpts.MaxEpisodes=10000;
+trainOpts.MaxStepsPerEpisode=250;
 trainOpts.StopTrainingCriteria = "EpisodeCount";
-trainOpts.StopTrainingValue = 1000;
+trainOpts.StopTrainingValue = 10000;
 trainOpts.ScoreAveragingWindowLength = 5;
-% trainOpts.SaveAgentCriteria = "EpisodeReward";
-% trainOpts.SaveAgentValue = 500;
 trainOpts.SaveAgentDirectory = "savedAgents";
 trainOpts.Verbose = false;
 trainOpts.Plots = "training-progress";
-
-% trainOpts.UseParallel=true;
-% trainOpts.ParallelizationOptions.Mode="async";
-% trainOpts.ParallelizationOptions.DataToSendFromWorkers="experiences";
-% trainOpts.ParallelizationOptions.StepsUntilDataIsSent=32;
 
 plot(env)
 trainingInfo = train(agent,env,trainOpts);
